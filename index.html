@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MeowTI 喵格测试 - 手机专属版</title>
+    <title>MeowTI 喵格测试 - 灵动互动版</title>
     <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
     <style>
         /* ================= 绘本风格 & 色彩 ================= */
@@ -17,9 +17,7 @@
 
         * { 
             box-sizing: border-box; 
-            /* 【优化2】彻底清除手机端点击时自带的半透明蓝色闪烁方块 */
             -webkit-tap-highlight-color: transparent; 
-            /* 【优化3】禁止用户长按选中文字，提升类似App的操作手感 */
             user-select: none; 
             -webkit-user-select: none;
         }
@@ -37,7 +35,6 @@
             display: flex;
             justify-content: center;
             min-height: 100vh;
-            /* 适配苹果手机底部的安全距离 */
             padding-bottom: env(safe-area-inset-bottom);
             overflow-x: hidden;
         }
@@ -61,91 +58,114 @@
             z-index: 1;
             background: rgba(253, 251, 247, 0.7);
             backdrop-filter: blur(2px);
-            /* 【优化4】隐藏手机端的垂直滚动条，让页面更干净 */
             scrollbar-width: none; 
         }
         .notebook-container::-webkit-scrollbar { display: none; }
 
+        /* 屏幕整体切换 */
         .screen { display: none; animation: wobbleIn 0.4s cubic-bezier(0.25, 0.1, 0.25, 1); }
         .screen.active { display: block; }
-        @keyframes wobbleIn { 
-            0% { opacity: 0; transform: translateY(15px) rotate(-2deg); } 
-            100% { opacity: 1; transform: translateY(0) rotate(0); } 
+        @keyframes wobbleIn { 0% { opacity: 0; transform: translateY(15px) rotate(-2deg); } 100% { opacity: 1; transform: translateY(0) rotate(0); } }
+
+        /* ================= 【新增】题目换场动画区 ================= */
+        /* 包裹题目的内部容器，用于做翻页特效 */
+        #quiz-anim-wrap {
+            width: 100%;
+        }
+        
+        /* 题目向左飘走隐藏 */
+        .page-turn-out {
+            animation: pageOut 0.3s forwards ease-in;
+        }
+        @keyframes pageOut {
+            0% { opacity: 1; transform: translateX(0) rotate(0deg); }
+            100% { opacity: 0; transform: translateX(-40px) rotate(-4deg); }
         }
 
-        /* 标题和排版 */
+        /* 下一题从右侧Q弹蹦出 */
+        .page-turn-in {
+            animation: pageIn 0.4s forwards cubic-bezier(0.34, 1.56, 0.64, 1); /* Q弹贝塞尔曲线 */
+        }
+        @keyframes pageIn {
+            0% { opacity: 0; transform: translateX(40px) rotate(4deg); }
+            100% { opacity: 1; transform: translateX(0) rotate(0deg); }
+        }
+
+        /* 排版样式 */
         .title-handwritten { font-size: 40px; text-align: center; margin-bottom: 25px; position: relative; display: inline-block; }
         .title-handwritten::after {
             content: ''; position: absolute; bottom: -5px; left: 0; width: 100%; height: 8px;
             background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0,5 Q25,0 50,5 T100,5" fill="none" stroke="%23ff7878" stroke-width="3"/></svg>') repeat-x;
             background-size: 40px 10px;
         }
-
         .progress-doodle { font-size: 16px; text-align: center; margin-bottom: 25px; color: var(--crayon-blue); border-bottom: 2px dashed #ddd; padding-bottom: 10px;}
         .question-text { font-size: 22px; line-height: 1.5; margin-bottom: 30px; }
 
-        /* 【优化5】手机专属按钮交互逻辑 */
+        /* ================= 选项按钮交互强化 ================= */
         .btn-hand-drawn {
-            display: block; width: 100%; padding: 16px 20px 16px 30px; margin-bottom: 16px;
+            display: block; width: 100%; padding: 16px 20px 16px 20px; margin-bottom: 16px;
             background-color: transparent;
             border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
             border: 3px solid var(--ink-black);
             cursor: pointer; font-family: inherit; font-size: 17px; color: var(--ink-black);
             text-align: left; position: relative;
-            /* 优化过渡动画，让手机点击反馈更敏捷 */
-            transition: transform 0.1s ease, background-color 0.1s ease, padding-left 0.1s ease;
-            touch-action: manipulation; /* 提升手机端点击响应速度 */
+            transition: all 0.2s ease;
+            touch-action: manipulation;
         }
 
-        .btn-hand-drawn::before {
-            content: '🐾'; position: absolute; left: 8px; top: 15px; opacity: 0;
-            transform: scale(0.5); transition: all 0.1s ease; font-size: 16px;
-        }
-
-        /* 区分 PC 端 hover 和 手机端 active (按压) */
-        @media (hover: hover) and (pointer: fine) {
-            /* 只有用鼠标的 PC 端才触发 hover，防止手机端出现颜色残留 */
-            .btn-hand-drawn:hover { background-color: var(--crayon-yellow); transform: scale(1.02) rotate(-1deg); padding-left: 35px; }
-            .btn-hand-drawn:hover::before { opacity: 1; transform: scale(1); }
-        }
-
-        /* 手机端用户的手指按压下去的瞬间触发 active */
+        /* 正常点击按压效果 */
         .btn-hand-drawn:active {
-            background-color: var(--crayon-yellow); 
-            /* 手机上点击采用“按下去(缩小)”的反馈，更有手感 */
-            transform: scale(0.96) rotate(-1deg) !important; 
-            padding-left: 35px;
+            transform: scale(0.96) rotate(-1deg); 
+            background-color: rgba(253, 219, 115, 0.3); /* 浅浅的黄色反馈 */
         }
-        .btn-hand-drawn:active::before { opacity: 1; transform: scale(1); }
+
+        /* 【新增】选中后的强调状态（盖章效果） */
+        .btn-hand-drawn.selected {
+            background-color: var(--crayon-yellow); /* 涂满蜡笔黄 */
+            transform: scale(0.98) rotate(1deg) !important;
+            border-width: 4px;
+            box-shadow: 2px 4px 0px rgba(0,0,0,0.1);
+            pointer-events: none; /* 防止重复点击 */
+        }
+
+        /* 【新增】选中的选项右侧出现的“猫爪盖章”特效 */
+        .btn-hand-drawn.selected::after {
+            content: '🐾';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            margin-top: -12px;
+            font-size: 24px;
+            /* 吧唧盖上的动画 */
+            animation: stamp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes stamp {
+            0% { opacity: 0; transform: scale(3) rotate(30deg); }
+            100% { opacity: 1; transform: scale(1) rotate(-15deg); }
+        }
 
         /* 主按钮 */
         .btn-primary-doodle {
             background-color: var(--crayon-red); color: white; text-align: center;
-            border-color: var(--crayon-red); font-size: 20px; margin-top: 30px; padding-left: 20px;
+            border-color: var(--crayon-red); font-size: 20px; margin-top: 30px; 
             transform: rotate(-1deg); box-shadow: 3px 3px 0px rgba(0,0,0,0.15);
-            justify-content: center;
         }
-        .btn-primary-doodle::before { display: none; }
-        .btn-primary-doodle:active { background-color: #e56060; transform: scale(0.95) rotate(1deg) !important; padding-left: 20px; box-shadow: 1px 1px 0px rgba(0,0,0,0.15);}
+        .btn-primary-doodle:active { background-color: #e56060; transform: scale(0.95) rotate(1deg) !important; box-shadow: 1px 1px 0px rgba(0,0,0,0.15);}
 
         /* 结果页 */
         .polaroid-frame { background: white; padding: 12px 12px 30px 12px; box-shadow: 2px 5px 15px rgba(0,0,0,0.08); transform: rotate(2deg); margin-bottom: 30px; position: relative; }
         .washi-tape { position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-3deg); width: 100px; height: 30px; background-color: rgba(123, 181, 209, 0.5); z-index: 10; border-left: 2px dotted rgba(255,255,255,0.5); border-right: 2px dotted rgba(255,255,255,0.5); }
-        
         .art-placeholder { width: 100%; aspect-ratio: 1/1; background-color: #f9f8f6; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed #ddd; color: #aaa; margin-bottom: 15px; border-radius: 8px; }
         .final-cat-art { width: 100%; height: auto; display: none; border-radius: 8px; margin-bottom: 15px; }
 
         .meta-prefix { font-size: 18px; color: var(--crayon-blue); text-align: center; }
         .meta-breed { font-size: 38px; margin: 5px 0; color: var(--crayon-red); text-shadow: 2px 2px 0px rgba(0,0,0,0.05); text-align: center; }
-
         .doodle-box { border: 3px solid var(--ink-black); border-radius: 15px 225px 255px 15px/255px 15px 225px 15px; padding: 20px 15px; margin-bottom: 25px; background: rgba(255,255,255,0.7); position: relative; }
         .doodle-box::after { content: '🐟'; position: absolute; right: -5px; bottom: -15px; font-size: 26px; transform: rotate(-20deg); }
-        
         .tags-wrapper { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center;}
         .tag-doodle { border: 2px solid var(--ink-black); padding: 5px 12px; border-radius: 20px; font-size: 14px; background: var(--paper-bg); box-shadow: 2px 2px 0px rgba(0,0,0,0.1); }
         .tag-doodle:nth-child(odd) { transform: rotate(-2deg); background: var(--crayon-yellow); }
         .tag-doodle:nth-child(even) { transform: rotate(2deg); }
-
         .analysis-text { font-size: 16px; line-height: 1.7; color: #444; padding: 0 5px; text-align: justify; }
 
         /* 动画加载页 */
@@ -156,13 +176,6 @@
         @keyframes chase { 0% { transform: translateY(0); } 50% { transform: translateY(-12px) rotate(5deg); } 100% { transform: translateY(0); } }
         @keyframes roll { 0% { transform: translateX(0) rotate(0deg); } 50% { transform: translateX(15px) rotate(180deg); } 100% { transform: translateX(0) rotate(360deg); } }
 
-        /* 【优化6】针对特别小的手机屏幕 (如 iPhone SE) 进行微调 */
-        @media screen and (max-width: 380px) {
-            .title-handwritten { font-size: 34px; }
-            .btn-hand-drawn { padding: 14px 15px 14px 25px; font-size: 15px; }
-            .btn-hand-drawn::before { top: 12px; left: 5px; }
-            .meta-breed { font-size: 32px; }
-        }
     </style>
 </head>
 <body>
@@ -182,9 +195,11 @@
     </div>
 
     <div id="screen-quiz" class="screen">
-        <div class="progress-doodle" id="progress-text">🐾 正在探索 1 / 15</div>
-        <div class="question-text" id="question-content">题目加载中...</div>
-        <div id="options-list"></div>
+        <div id="quiz-anim-wrap">
+            <div class="progress-doodle" id="progress-text">🐾 正在探索 1 / 15</div>
+            <div class="question-text" id="question-content">题目加载中...</div>
+            <div id="options-list"></div>
+        </div>
     </div>
 
     <div id="screen-loading" class="screen">
@@ -200,31 +215,25 @@
     <div id="screen-result" class="screen">
         <div class="polaroid-frame">
             <div class="washi-tape"></div> 
-            
             <div class="art-placeholder" id="placeholder-box">
                 <span style="font-size: 35px; margin-bottom: 10px;">🖌️</span>
                 [ 美工作品展示区 ]
             </div>
             <img class="final-cat-art" id="cat-artwork" src="" alt="专属喵格">
-            
             <div class="meta-prefix" id="res-prefix">称号加载中</div>
             <h1 class="meta-breed" id="res-breed">品种名</h1>
         </div>
-
         <div class="doodle-box">
             <div style="color: var(--crayon-red); font-size: 15px; margin-bottom: 8px; font-weight: bold;">「 喵言喵语 」</div>
             <p id="res-quote" style="font-size: 18px; font-weight: bold; margin: 0;">“金句加载中”</p>
         </div>
-
         <div class="tags-wrapper" id="res-tags"></div>
         <div class="analysis-text" id="res-analysis">解析文案加载中...</div>
-
         <button class="btn-hand-drawn btn-primary-doodle" onclick="location.reload()" style="margin-top: 35px;">再画一只 🖍️</button>
     </div>
 </div>
 
 <script>
-    // 题目数组（请根据之前的设定补齐所有题目）
     const questions = [
         // E/I 维度
         { q: "清晨，主人的闹钟响了但他没醒，你会：", a: [
@@ -324,7 +333,6 @@
         ]}
     ];
 
-    // 16型猫咪数据（请确保这里录入完整）
     const resultData = {
         // --- 守护者阵营 (SJ) ---
         "ISTJ": { 
@@ -475,11 +483,12 @@
 
     let currentIdx = 0;
     let scores = { E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0 };
+    // 【新增】防止用户在动画播放期间狂点按钮
+    let isAnimating = false; 
 
     function switchScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        // 【优化7】每次切换屏幕时，自动滚动到顶部，防止页面停留在半中央
         window.scrollTo(0, 0); 
     }
 
@@ -499,14 +508,44 @@
             const btn = document.createElement('button');
             btn.className = 'btn-hand-drawn';
             btn.innerText = opt.t;
+            
             btn.onclick = () => {
-                // 【优化8】延迟跳转，让用户看清自己手指点下去的按钮反馈（0.15秒）
+                // 如果正在播放动画，阻止点击
+                if (isAnimating) return;
+                isAnimating = true;
+
+                // 1. 盖章反馈：给当前点的按钮加上 selected 样式，触发猫爪印章和黄底色
+                btn.classList.add('selected');
+
+                if (opt.s) { for (let k in opt.s) scores[k] += opt.s[k]; }
+
+                // 2. 停留 300 毫秒，让用户看清楚“猫爪盖章”的动画
                 setTimeout(() => {
-                    if (opt.s) { for (let k in opt.s) scores[k] += opt.s[k]; }
-                    currentIdx++;
-                    if (currentIdx < questions.length) renderQuestion();
-                    else calcResult();
-                }, 150);
+                    const animWrap = document.getElementById('quiz-anim-wrap');
+                    // 3. 开始旧题目飘走动画 (向左翻页)
+                    animWrap.classList.add('page-turn-out');
+
+                    setTimeout(() => {
+                        currentIdx++;
+                        if (currentIdx < questions.length) {
+                            // 渲染新题目
+                            renderQuestion();
+                            
+                            // 4. 移除飘走动画，加入新题目蹦出动画 (向右弹入)
+                            animWrap.classList.remove('page-turn-out');
+                            animWrap.classList.add('page-turn-in');
+                            
+                            // 5. 动画播放完毕后清理状态
+                            setTimeout(() => {
+                                animWrap.classList.remove('page-turn-in');
+                                isAnimating = false;
+                            }, 400);
+
+                        } else {
+                            calcResult();
+                        }
+                    }, 300); // 题目向左飘走耗时 300ms
+                }, 300); // 猫爪印章显示 300ms
             };
             list.appendChild(btn);
         });
@@ -514,7 +553,6 @@
 
     function calcResult() {
         switchScreen('screen-loading');
-
         const EI = scores.E >= scores.I ? 'E' : 'I';
         const SN = scores.S >= scores.N ? 'S' : 'N';
         const TF = scores.T >= scores.F ? 'T' : 'F';
