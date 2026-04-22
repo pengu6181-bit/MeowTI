@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MeowTI 喵格测试 - 最终交互版</title>
+    <title>MeowTI 喵格测试 - 最终完整版</title>
     <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
     <style>
         /* ================= 基础配置与背景 ================= */
@@ -67,15 +67,29 @@
         .btn-hand-drawn.selected::after { content: '🐾'; position: absolute; right: 15px; top: 50%; margin-top: -12px; font-size: 24px; animation: stamp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         @keyframes stamp { 0% { opacity: 0; transform: scale(3) rotate(30deg); } 100% { opacity: 1; transform: scale(1) rotate(-15deg); } }
 
+        /* ================= 主按钮样式 ================= */
         .btn-primary-doodle { background-color: var(--crayon-red); color: white; text-align: center; border-color: var(--crayon-red); font-size: 20px; margin-top: 30px; transform: rotate(-1deg); box-shadow: 3px 3px 0px rgba(0,0,0,0.15); font-weight: bold;}
         .btn-primary-doodle:active { background-color: #e56060; transform: scale(0.95) rotate(1deg) !important; box-shadow: 1px 1px 0px rgba(0,0,0,0.15);}
 
-        /* ================= 新增：底部动作栏 ================= */
-        .action-bar { display: flex; justify-content: space-between; margin-top: 40px; }
+        /* ================= 分享按钮专用样式 ================= */
+        .btn-secondary-doodle { 
+            background-color: var(--crayon-blue); color: white; text-align: center; 
+            border-color: var(--crayon-blue); font-size: 20px; 
+            transform: rotate(1deg); box-shadow: 3px 3px 0px rgba(0,0,0,0.15); font-weight: bold;
+        }
+        .btn-secondary-doodle:active { 
+            background-color: #5fa5c4; transform: scale(0.95) rotate(-1deg) !important; box-shadow: 1px 1px 0px rgba(0,0,0,0.15);
+        }
+
+        /* ================= 底部动作栏 (胶囊按钮) ================= */
+        .action-bar { display: flex; justify-content: space-between; margin-top: 40px; gap: 10px; }
         .spacer { flex: 1; }
-        .action-btn { margin: 0; padding: 12px 15px; font-size: 15px; border: 2px solid var(--ink-black); border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; background-color: var(--paper-bg); box-shadow: 2px 2px 0px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease; font-family: inherit;}
-        .back-btn { background-color: #f1f5f9; }
-        .confirm-btn { background-color: var(--crayon-yellow); font-weight: bold; }
+        .action-btn { 
+            margin: 0; padding: 12px 20px; font-size: 15px; border: 2px solid var(--ink-black); 
+            background-color: var(--crayon-yellow); color: var(--ink-black); font-weight: bold;
+            border-radius: 50px; box-shadow: 2px 2px 0px rgba(0,0,0,0.1); 
+            cursor: pointer; transition: all 0.2s ease; font-family: inherit;
+        }
         .confirm-btn.disabled { opacity: 0.4; pointer-events: none; }
         .action-btn:active { transform: scale(0.95) rotate(-1deg); box-shadow: 0px 0px 0px rgba(0,0,0,0.1); }
 
@@ -121,7 +135,7 @@
 
     <div id="screen-quiz" class="screen">
         <div id="quiz-anim-wrap">
-            <div class="progress-doodle" id="progress-text">🐾 正在探索 1 / 15</div>
+            <div class="progress-doodle" id="progress-text">🐾 正在探索 1 / ?</div>
             <div class="question-text" id="question-content">题目加载中...</div>
             <div id="options-list"></div>
 
@@ -154,12 +168,14 @@
         </div>
         <div class="tags-wrapper" id="res-tags"></div>
         <div class="analysis-text" id="res-analysis">解析文案加载中...</div>
-        <button class="btn-hand-drawn btn-primary-doodle" onclick="location.reload()" style="margin-top: 35px;">再画一只 🖍️</button>
+        
+        <button class="btn-hand-drawn btn-secondary-doodle" onclick="shareResult()" style="margin-top: 35px; margin-bottom: 15px;">📢 召唤两脚兽来测</button>
+        <button class="btn-hand-drawn btn-primary-doodle" onclick="location.reload()" style="margin-top: 0;">再画一只 🖍️</button>
     </div>
 </div>
 
 <script>
-    // 【请补齐 15 道题】
+    // 【请在此处补齐完整的题目】
     const questions = [
         { q: "清晨，主人的闹钟响了但他没醒，你会：", a: [
             { t: "踩在他脸上，大声催他起来开饭", s: {E:2} },
@@ -175,23 +191,10 @@
         ]}
     ];
 
+    // 【请在此处补齐完整的猫咪性格数据】
     const resultData = {
       "ISTJ": { breed: "中华狸花猫", imgName: "cat_ISTJ.jpg", prefix: "干饭第一名的", quote: "少废话，把今天的罐头交出来。", tags: ["务实机警", "拒绝内耗", "执行力爆表"], analysis: "狸花猫是天生的生存专家。你极其务实，有着自己严格的章法和节奏，做事利落，执行力爆表。" },
-      "ISFJ": { breed: "异国短毛猫", imgName: "cat_ISFJ.jpg", prefix: "默默记住你喜好的", quote: "你没说，但我记得你上次提过。", tags: ["生日不会忘", "情绪极其稳定", "体贴细节控"], analysis: "你就像加菲猫一样憨厚呆萌，但骨子里是一部超级细致的人际记录仪，把照顾别人当成一种本能。" },
-      "ESTJ": { breed: "东方短毛猫", imgName: "cat_ESTJ.jpg", prefix: "绝对掌控全局的", quote: "在这个家里，规矩由我来定。", tags: ["领地意识", "雷厉风行", "天生管理者"], analysis: "你是一个天生的管理者，做事雷厉风行，极度看重秩序和结果。总能把杂乱无章的事情安排得明明白白。" },
-      "ESFJ": { breed: "美国短毛猫", imgName: "cat_ESFJ.jpg", prefix: "能和所有人打成一片的", quote: "新来的小狗？别怕，交给我来带！", tags: ["中央空调", "极度热心", "害怕被孤立"], analysis: "美短性格极其友善，能和所有人完美打成一片。你有着超强的亲和力与责任感，让大家感到开心是你最大的成就感。" },
-      "ISTP": { breed: "挪威森林猫", imgName: "cat_ISTP.jpg", prefix: "身手极其矫健的", quote: "别管我，我自己在柜顶待会儿。", tags: ["绝对自由", "隐蔽极高", "行动派"], analysis: "你极其需要私人空间，讨厌被过度干涉。动手能力强，遇到危机时总是最冷静的那一个，喜欢用行动解决问题。" },
-      "ISFP": { breed: "无毛猫", imgName: "cat_ISFP.jpg", prefix: "特立独行且迷人的", quote: "我只对认定的人露出肚皮。", tags: ["极致颜控", "极度依赖", "慢热型"], analysis: "你是一个极致的颜控和浪漫主义者，对美有着敏锐的直觉。虽然面对陌生人有些高冷，但对认定的朋友有着极强的依恋。" },
-      "ESTP": { breed: "奶牛猫", imgName: "cat_ESTP.jpg", prefix: "永远在挑战极限的", quote: "那个花瓶看起来很好推，我试一下！", tags: ["冒险家", "绝不内耗", "全场气氛组"], analysis: "奶牛猫是出了名的冒险家。你的字典里没有内耗，每天都充满着用不完的精力。你是能在关键时刻带给大家无数欢乐的活宝。" },
-      "ESFP": { breed: "德文卷毛猫", imgName: "cat_ESFP.jpg", prefix: "天生热爱舞台的", quote: "快看我！快看我！我翻跟头了！", tags: ["天生戏精", "快乐至上", "聚光灯体质"], analysis: "你天生热爱舞台，渴望被关注，有你在的地方绝对不会冷场。你的快乐极具传染力，是个百分百的“活在当下”大师。" },
-      "INFJ": { breed: "布偶猫", imgName: "cat_INFJ.jpg", prefix: "敏锐察觉一切情绪的", quote: "你今天好像不太开心，我来陪你。", tags: ["精神洁癖", "情绪海绵", "极致温柔"], analysis: "你有着极强的共情能力，能敏锐察觉到别人没说出口的情绪。你渴望深刻的灵魂共鸣，温柔对待世界。" },
-      "INFP": { breed: "波斯猫", imgName: "cat_INFP.jpg", prefix: "内心戏极其丰富的", quote: "今天窗外的落叶，好像在诉说离别。", tags: ["多愁善感", "和平主义", "重度精神内耗"], analysis: "波斯猫就像一位安静的哲学家。你对世界充满了善意，有着庞大的精神宇宙。你极其讨厌冲突，是个温柔的小天使。" },
-      "ENFJ": { breed: "缅因猫", imgName: "cat_ENFJ.jpg", prefix: "充满无限保护欲的", quote: "别怕，站到我身后去。", tags: ["温柔霸总", "知心大哥", "天生利他"], analysis: "你是团队里天生的灵魂人物，充满了强烈的保护欲。你愿意为了在乎的人遮风挡雨，是大家最坚实的后盾。" },
-      "ENFP": { breed: "三花猫", imgName: "cat_ENFP.jpg", prefix: "每天脑洞大开的", quote: "快看那个纸团！那是通往异世界的钥匙！", tags: ["重度自来熟", "情绪感染力MAX", "三分钟热度"], analysis: "你拥有无穷无尽的好奇心，能瞬间点燃气氛。你真诚热烈的灵魂，是所有人生活中的一抹亮色。" },
-      "INTJ": { breed: "俄罗斯蓝猫", imgName: "cat_INTJ.jpg", prefix: "早已看穿一切的", quote: "人类的愚蠢，有时真让人无奈。", tags: ["高冷神秘", "逻辑严密", "深度独立"], analysis: "你是冷静的观察者，更喜欢待在安全距离外审视世界，追求高效和逻辑。但对“自己人”会展现出毫无保留的忠诚。" },
-      "INTP": { breed: "英国短毛猫", imgName: "cat_INTP.jpg", prefix: "能躺着绝不站着的", quote: "思考猫生太累了，先睡一觉再说。", tags: ["深度社恐", "极度佛系", "精神内核稳"], analysis: "比起外界的喧嚣，你更享受独自思考的时光。对世界底层逻辑充满好奇，但一旦要付诸行动，通常会选择继续躺平。" },
-      "ENTP": { breed: "暹罗猫", imgName: "cat_ENTP.jpg", prefix: "不按套路出牌的", quote: "我就推一下这个杯子，看你有什么反应。", tags: ["极度话痨", "好奇心爆棚", "灵魂有趣"], analysis: "你思维极其敏捷，好奇心爆棚，对什么都要问个为什么。你不按套路出牌，灵魂极度有趣。" },
-      "ENTJ": { breed: "孟加拉豹猫", imgName: "cat_ENTJ.jpg", prefix: "从不掩饰野心的", quote: "整座房子，都是我的巡视领地。", tags: ["天生王者", "行动派", "极度自信"], analysis: "你自带让人臣服的狂野气场。有着极强的目标感、野心和执行力，遇到问题迅速寻找最优解并雷厉风行地执行。" },
+      "ENFP": { breed: "三花猫", imgName: "cat_ENFP.jpg", prefix: "每天脑洞大开的", quote: "快看那个纸团！那是通往异世界的钥匙！", tags: ["重度自来熟", "情绪感染力MAX", "三分钟热度"], analysis: "作为三花猫，你的生命在于折腾和探索！你拥有无穷无尽的好奇心，能瞬间点燃全场气氛。" },
       "DEFAULT": { breed: "灰白曼基康", imgName: "cat_DEFAULT.jpg", prefix: "特立独行无法定义的", quote: "我的心思，你别猜。", tags: ["极具个性", "不按套路出牌", "内心强大"], analysis: "你是一个矛盾又迷人的结合体。你不喜欢被世俗标签定义，有着自己独特的节奏和评价体系，最重要的是体验当下。" }
     };
 
@@ -330,6 +333,25 @@
 
             switchScreen('screen-result');
         }, 1500); 
+    }
+
+    // 分享功能逻辑
+    function shareResult() {
+        const shareData = {
+            title: 'MeowTI 喵格测试',
+            text: '快来看看你是哪只小猫咪！我的灵魂已经被这只猫猫看透了🐾',
+            url: window.location.href
+        };
+
+        if (navigator.share) {
+            navigator.share(shareData).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('🐾 链接已复制成功！快去粘贴发给其他两脚兽吧！');
+            }).catch(err => {
+                alert('不好意思喵，自动复制失败了，请手动复制顶部的网页链接分享哦！');
+            });
+        }
     }
 </script>
 </body>
