@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MeowTI 喵格测试 - 灵动治愈版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>MeowTI 喵格测试 - 手机专属版</title>
     <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
     <style>
         /* ================= 绘本风格 & 色彩 ================= */
@@ -13,14 +13,19 @@
             --crayon-red: #ff7878; 
             --crayon-blue: #7bb5d1; 
             --crayon-yellow: #fddb73;
-            --paw-pink: #ff9eaa;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { 
+            box-sizing: border-box; 
+            /* 【优化2】彻底清除手机端点击时自带的半透明蓝色闪烁方块 */
+            -webkit-tap-highlight-color: transparent; 
+            /* 【优化3】禁止用户长按选中文字，提升类似App的操作手感 */
+            user-select: none; 
+            -webkit-user-select: none;
+        }
 
         body {
             background-color: var(--paper-bg);
-            /* 纸张噪点 + 浅色网格线，模拟手账本 */
             background-image: 
                 linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px),
@@ -32,154 +37,132 @@
             display: flex;
             justify-content: center;
             min-height: 100vh;
+            /* 适配苹果手机底部的安全距离 */
+            padding-bottom: env(safe-area-inset-bottom);
             overflow-x: hidden;
         }
 
-        /* ================= 背景动态漂浮物 (猫咪彩蛋) ================= */
-        .bg-decor {
-            position: fixed;
-            font-size: 30px;
-            opacity: 0.15; /* 若隐若现，不抢主视觉 */
-            z-index: 0;
-            pointer-events: none;
-            filter: sepia(0.5) hue-rotate(-10deg); /* 让Emoji色调偏复古纸张感 */
-        }
+        /* 背景动态漂浮物 */
+        .bg-decor { position: fixed; font-size: 30px; opacity: 0.15; z-index: 0; pointer-events: none; filter: sepia(0.5) hue-rotate(-10deg); }
         .decor-1 { top: 10%; left: 5%; animation: float 6s ease-in-out infinite; }
         .decor-2 { bottom: 20%; right: 5%; animation: float 8s ease-in-out infinite reverse; }
         .decor-3 { top: 40%; right: 10%; animation: float 7s ease-in-out infinite; transform: rotate(15deg); }
         .decor-4 { bottom: 10%; left: 15%; animation: float 5s ease-in-out infinite reverse; font-size: 40px; }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(10deg); }
-        }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(10deg); } }
 
         /* 主容器 */
         .notebook-container {
             width: 100%;
             max-width: 420px;
             min-height: 100vh;
-            padding: 30px 20px;
+            padding: 30px 20px 40px 20px;
             position: relative;
             z-index: 1;
-            background: rgba(253, 251, 247, 0.6);
+            background: rgba(253, 251, 247, 0.7);
             backdrop-filter: blur(2px);
+            /* 【优化4】隐藏手机端的垂直滚动条，让页面更干净 */
+            scrollbar-width: none; 
         }
+        .notebook-container::-webkit-scrollbar { display: none; }
 
-        /* 屏幕切换动画 */
-        .screen { display: none; animation: wobbleIn 0.5s cubic-bezier(0.25, 0.1, 0.25, 1); }
+        .screen { display: none; animation: wobbleIn 0.4s cubic-bezier(0.25, 0.1, 0.25, 1); }
         .screen.active { display: block; }
         @keyframes wobbleIn { 
-            0% { opacity: 0; transform: translateY(20px) rotate(-3deg); } 
-            50% { transform: rotate(1deg); }
+            0% { opacity: 0; transform: translateY(15px) rotate(-2deg); } 
             100% { opacity: 1; transform: translateY(0) rotate(0); } 
         }
 
-        /* ================= 手绘风 UI 控件 ================= */
-        .title-handwritten {
-            font-size: 42px; text-align: center; margin-bottom: 30px;
-            position: relative; display: inline-block;
-        }
+        /* 标题和排版 */
+        .title-handwritten { font-size: 40px; text-align: center; margin-bottom: 25px; position: relative; display: inline-block; }
         .title-handwritten::after {
             content: ''; position: absolute; bottom: -5px; left: 0; width: 100%; height: 8px;
             background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0,5 Q25,0 50,5 T100,5" fill="none" stroke="%23ff7878" stroke-width="3"/></svg>') repeat-x;
             background-size: 40px 10px;
         }
 
-        .progress-doodle { font-size: 18px; text-align: center; margin-bottom: 25px; color: var(--crayon-blue); border-bottom: 2px dashed #ddd; padding-bottom: 10px;}
-        .question-text { font-size: 24px; line-height: 1.5; margin-bottom: 30px; }
+        .progress-doodle { font-size: 16px; text-align: center; margin-bottom: 25px; color: var(--crayon-blue); border-bottom: 2px dashed #ddd; padding-bottom: 10px;}
+        .question-text { font-size: 22px; line-height: 1.5; margin-bottom: 30px; }
 
-        /* 选项按钮 */
+        /* 【优化5】手机专属按钮交互逻辑 */
         .btn-hand-drawn {
-            display: block; width: 100%; padding: 18px 20px 18px 30px; margin-bottom: 18px;
+            display: block; width: 100%; padding: 16px 20px 16px 30px; margin-bottom: 16px;
             background-color: transparent;
             border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
             border: 3px solid var(--ink-black);
-            cursor: pointer; font-family: inherit; font-size: 18px; color: var(--ink-black);
-            text-align: left; transition: all 0.2s ease; position: relative;
+            cursor: pointer; font-family: inherit; font-size: 17px; color: var(--ink-black);
+            text-align: left; position: relative;
+            /* 优化过渡动画，让手机点击反馈更敏捷 */
+            transition: transform 0.1s ease, background-color 0.1s ease, padding-left 0.1s ease;
+            touch-action: manipulation; /* 提升手机端点击响应速度 */
         }
 
-        /* 悬浮彩蛋：小猫爪出现 */
         .btn-hand-drawn::before {
-            content: '🐾'; position: absolute; left: 5px; top: 16px; opacity: 0;
-            transform: translateX(-10px); transition: all 0.2s ease; font-size: 16px;
+            content: '🐾'; position: absolute; left: 8px; top: 15px; opacity: 0;
+            transform: scale(0.5); transition: all 0.1s ease; font-size: 16px;
         }
-        .btn-hand-drawn:hover::before, .btn-hand-drawn:active::before {
-            opacity: 1; transform: translateX(0);
+
+        /* 区分 PC 端 hover 和 手机端 active (按压) */
+        @media (hover: hover) and (pointer: fine) {
+            /* 只有用鼠标的 PC 端才触发 hover，防止手机端出现颜色残留 */
+            .btn-hand-drawn:hover { background-color: var(--crayon-yellow); transform: scale(1.02) rotate(-1deg); padding-left: 35px; }
+            .btn-hand-drawn:hover::before { opacity: 1; transform: scale(1); }
         }
-        .btn-hand-drawn:hover, .btn-hand-drawn:active {
-            background-color: var(--crayon-yellow); transform: scale(1.02) rotate(-1deg);
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.1); padding-left: 35px;
+
+        /* 手机端用户的手指按压下去的瞬间触发 active */
+        .btn-hand-drawn:active {
+            background-color: var(--crayon-yellow); 
+            /* 手机上点击采用“按下去(缩小)”的反馈，更有手感 */
+            transform: scale(0.96) rotate(-1deg) !important; 
+            padding-left: 35px;
         }
+        .btn-hand-drawn:active::before { opacity: 1; transform: scale(1); }
 
         /* 主按钮 */
         .btn-primary-doodle {
             background-color: var(--crayon-red); color: white; text-align: center;
-            border-color: var(--crayon-red); font-size: 22px; margin-top: 30px; padding-left: 20px;
+            border-color: var(--crayon-red); font-size: 20px; margin-top: 30px; padding-left: 20px;
             transform: rotate(-1deg); box-shadow: 3px 3px 0px rgba(0,0,0,0.15);
+            justify-content: center;
         }
-        .btn-primary-doodle:hover, .btn-primary-doodle:active {
-            background-color: #ff5252; transform: scale(1.05) rotate(1deg); padding-left: 20px;
-        }
-        .btn-primary-doodle::before { display: none; } /* 隐藏主按钮的悬浮猫爪 */
+        .btn-primary-doodle::before { display: none; }
+        .btn-primary-doodle:active { background-color: #e56060; transform: scale(0.95) rotate(1deg) !important; padding-left: 20px; box-shadow: 1px 1px 0px rgba(0,0,0,0.15);}
 
-        /* ================= 结果页：拍立得与胶带 ================= */
-        .polaroid-frame {
-            background: white; padding: 15px 15px 35px 15px;
-            box-shadow: 3px 6px 18px rgba(0,0,0,0.06);
-            transform: rotate(2deg); margin-bottom: 40px; position: relative;
-        }
-        /* 手账胶带效果 */
-        .washi-tape {
-            position: absolute; top: -12px; left: 50%; transform: translateX(-50%) rotate(-3deg);
-            width: 120px; height: 35px; background-color: rgba(123, 181, 209, 0.5); /* 半透明蓝色胶带 */
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); z-index: 10; border-radius: 2px;
-            /* 胶带撕裂边缘效果 */
-            border-left: 2px dotted rgba(255,255,255,0.5); border-right: 2px dotted rgba(255,255,255,0.5);
-        }
+        /* 结果页 */
+        .polaroid-frame { background: white; padding: 12px 12px 30px 12px; box-shadow: 2px 5px 15px rgba(0,0,0,0.08); transform: rotate(2deg); margin-bottom: 30px; position: relative; }
+        .washi-tape { position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-3deg); width: 100px; height: 30px; background-color: rgba(123, 181, 209, 0.5); z-index: 10; border-left: 2px dotted rgba(255,255,255,0.5); border-right: 2px dotted rgba(255,255,255,0.5); }
+        
+        .art-placeholder { width: 100%; aspect-ratio: 1/1; background-color: #f9f8f6; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed #ddd; color: #aaa; margin-bottom: 15px; border-radius: 8px; }
+        .final-cat-art { width: 100%; height: auto; display: none; border-radius: 8px; margin-bottom: 15px; }
 
-        .art-placeholder {
-            width: 100%; aspect-ratio: 1/1; background-color: #f9f8f6;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border: 2px dashed #ddd; color: #aaa; margin-bottom: 15px; border-radius: 8px;
-        }
-        .final-cat-art { width: 100%; height: auto; display: none; border-radius: 8px; margin-bottom: 15px;}
+        .meta-prefix { font-size: 18px; color: var(--crayon-blue); text-align: center; }
+        .meta-breed { font-size: 38px; margin: 5px 0; color: var(--crayon-red); text-shadow: 2px 2px 0px rgba(0,0,0,0.05); text-align: center; }
 
-        .result-meta { text-align: center; }
-        .meta-prefix { font-size: 20px; color: var(--crayon-blue); }
-        .meta-breed { font-size: 42px; margin: 5px 0; color: var(--crayon-red); text-shadow: 2px 2px 0px rgba(0,0,0,0.05); }
-
-        /* 金句框 */
-        .doodle-box {
-            border: 3px solid var(--ink-black);
-            border-radius: 15px 225px 255px 15px/255px 15px 225px 15px;
-            padding: 25px 20px; margin-bottom: 30px; background: rgba(255,255,255,0.7);
-            position: relative;
-        }
-        /* 装饰小鱼干 */
-        .doodle-box::after { content: '🐟'; position: absolute; right: -10px; bottom: -15px; font-size: 30px; transform: rotate(-20deg); }
-
-        .tags-wrapper { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; justify-content: center;}
-        .tag-doodle { 
-            border: 2px solid var(--ink-black); padding: 6px 14px; 
-            border-radius: 20px; font-size: 15px; background: var(--paper-bg);
-            box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
-        }
-        /* 让标签随机倾斜 */
+        .doodle-box { border: 3px solid var(--ink-black); border-radius: 15px 225px 255px 15px/255px 15px 225px 15px; padding: 20px 15px; margin-bottom: 25px; background: rgba(255,255,255,0.7); position: relative; }
+        .doodle-box::after { content: '🐟'; position: absolute; right: -5px; bottom: -15px; font-size: 26px; transform: rotate(-20deg); }
+        
+        .tags-wrapper { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center;}
+        .tag-doodle { border: 2px solid var(--ink-black); padding: 5px 12px; border-radius: 20px; font-size: 14px; background: var(--paper-bg); box-shadow: 2px 2px 0px rgba(0,0,0,0.1); }
         .tag-doodle:nth-child(odd) { transform: rotate(-2deg); background: var(--crayon-yellow); }
         .tag-doodle:nth-child(even) { transform: rotate(2deg); }
 
-        .analysis-text { font-size: 17px; line-height: 1.8; letter-spacing: 1px; color: #444; padding: 0 10px; }
+        .analysis-text { font-size: 16px; line-height: 1.7; color: #444; padding: 0 5px; text-align: justify; }
 
-        /* 加载页追毛线球动画 */
-        #loading-doodle { text-align: center; padding-top: 35%; font-size: 22px; }
-        .cat-loading-anim { font-size: 50px; display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;}
-        .cat-run { animation: chase 1.2s infinite linear; }
-        .yarn-roll { animation: roll 1.2s infinite linear; }
+        /* 动画加载页 */
+        #loading-doodle { text-align: center; padding-top: 40%; font-size: 20px; }
+        .cat-loading-anim { font-size: 45px; display: flex; justify-content: center; gap: 15px; margin-bottom: 15px;}
+        .cat-run { animation: chase 1s infinite linear; }
+        .yarn-roll { animation: roll 1s infinite linear; }
+        @keyframes chase { 0% { transform: translateY(0); } 50% { transform: translateY(-12px) rotate(5deg); } 100% { transform: translateY(0); } }
+        @keyframes roll { 0% { transform: translateX(0) rotate(0deg); } 50% { transform: translateX(15px) rotate(180deg); } 100% { transform: translateX(0) rotate(360deg); } }
 
-        @keyframes chase { 0% { transform: translateY(0); } 50% { transform: translateY(-15px) rotate(5deg); } 100% { transform: translateY(0); } }
-        @keyframes roll { 0% { transform: translateX(0) rotate(0deg); } 50% { transform: translateX(20px) rotate(180deg); } 100% { transform: translateX(0) rotate(360deg); } }
-
+        /* 【优化6】针对特别小的手机屏幕 (如 iPhone SE) 进行微调 */
+        @media screen and (max-width: 380px) {
+            .title-handwritten { font-size: 34px; }
+            .btn-hand-drawn { padding: 14px 15px 14px 25px; font-size: 15px; }
+            .btn-hand-drawn::before { top: 12px; left: 5px; }
+            .meta-breed { font-size: 32px; }
+        }
     </style>
 </head>
 <body>
@@ -191,15 +174,15 @@
 
 <div class="notebook-container">
     
-    <div id="screen-home" class="screen active" style="text-align: center; padding-top: 15%;">
-        <img src="./home_cat.png" alt="首页猫咪" style="width: 160px; height: 160px; object-fit: cover; border-radius: 50%; margin: 0 auto 20px auto; display: block; animation: float 4s infinite; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    <div id="screen-home" class="screen active" style="text-align: center; padding-top: 10%;">
+        <img src="./home_cat.png" alt="首页猫咪" style="width: 140px; height: 140px; object-fit: cover; border-radius: 50%; margin: 0 auto 20px auto; display: block; animation: float 4s infinite; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
         <h1 class="title-handwritten">MeowTI<br>喵格测试</h1>
-        <p style="font-size: 18px; margin-bottom: 40px; color: var(--text-second); font-weight: bold;">哪只小猫咪，画出了你的灵魂？</p>
+        <p style="font-size: 16px; margin-bottom: 40px; color: var(--text-second); font-weight: bold;">哪只小猫咪，画出了你的灵魂？</p>
         <button class="btn-hand-drawn btn-primary-doodle" onclick="startGame()">翻开日记本开始 🐾</button>
     </div>
 
     <div id="screen-quiz" class="screen">
-        <div class="progress-doodle" id="progress-text">🐾 正在探索 1 / 12</div>
+        <div class="progress-doodle" id="progress-text">🐾 正在探索 1 / 15</div>
         <div class="question-text" id="question-content">题目加载中...</div>
         <div id="options-list"></div>
     </div>
@@ -216,32 +199,32 @@
 
     <div id="screen-result" class="screen">
         <div class="polaroid-frame">
-            <div class="washi-tape"></div> <div class="art-placeholder" id="placeholder-box">
-                <span style="font-size: 40px; margin-bottom: 10px;">🖌️</span>
+            <div class="washi-tape"></div> 
+            
+            <div class="art-placeholder" id="placeholder-box">
+                <span style="font-size: 35px; margin-bottom: 10px;">🖌️</span>
                 [ 美工作品展示区 ]
             </div>
             <img class="final-cat-art" id="cat-artwork" src="" alt="专属喵格">
             
-            <div class="result-meta">
-                <div class="meta-prefix" id="res-prefix">称号加载中</div>
-                <h1 class="meta-breed" id="res-breed">品种名</h1>
-            </div>
+            <div class="meta-prefix" id="res-prefix">称号加载中</div>
+            <h1 class="meta-breed" id="res-breed">品种名</h1>
         </div>
 
         <div class="doodle-box">
-            <div style="color: var(--crayon-red); font-size: 16px; margin-bottom: 10px; font-weight: bold;">「 喵言喵语 」</div>
-            <p id="res-quote" style="font-size: 20px; font-weight: bold; margin: 0;">“金句加载中”</p>
+            <div style="color: var(--crayon-red); font-size: 15px; margin-bottom: 8px; font-weight: bold;">「 喵言喵语 」</div>
+            <p id="res-quote" style="font-size: 18px; font-weight: bold; margin: 0;">“金句加载中”</p>
         </div>
 
         <div class="tags-wrapper" id="res-tags"></div>
         <div class="analysis-text" id="res-analysis">解析文案加载中...</div>
 
-        <button class="btn-hand-drawn btn-primary-doodle" onclick="location.reload()" style="margin-top: 40px;">再画一只 🖍️</button>
+        <button class="btn-hand-drawn btn-primary-doodle" onclick="location.reload()" style="margin-top: 35px;">再画一只 🖍️</button>
     </div>
 </div>
 
 <script>
-    /* ================= 题库 (此处仅作演示，请将上文提供的12-15道题粘贴于此) ================= */
+    // 题目数组（请根据之前的设定补齐所有题目）
     const questions = [
         // E/I 维度
         { q: "清晨，主人的闹钟响了但他没醒，你会：", a: [
@@ -341,7 +324,7 @@
         ]}
     ];
 
-    /* ================= 16型猫咪数据 ================= */
+    // 16型猫咪数据（请确保这里录入完整）
     const resultData = {
         // --- 守护者阵营 (SJ) ---
         "ISTJ": { 
@@ -490,13 +473,14 @@
         }
     };
 
-    /* ================= 核心流程控制 ================= */
     let currentIdx = 0;
     let scores = { E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0 };
 
     function switchScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        // 【优化7】每次切换屏幕时，自动滚动到顶部，防止页面停留在半中央
+        window.scrollTo(0, 0); 
     }
 
     function startGame() {
@@ -516,10 +500,13 @@
             btn.className = 'btn-hand-drawn';
             btn.innerText = opt.t;
             btn.onclick = () => {
-                if (opt.s) { for (let k in opt.s) scores[k] += opt.s[k]; }
-                currentIdx++;
-                if (currentIdx < questions.length) renderQuestion();
-                else calcResult();
+                // 【优化8】延迟跳转，让用户看清自己手指点下去的按钮反馈（0.15秒）
+                setTimeout(() => {
+                    if (opt.s) { for (let k in opt.s) scores[k] += opt.s[k]; }
+                    currentIdx++;
+                    if (currentIdx < questions.length) renderQuestion();
+                    else calcResult();
+                }, 150);
             };
             list.appendChild(btn);
         });
@@ -554,18 +541,18 @@
             const artImg = document.getElementById('cat-artwork');
             const placeholder = document.getElementById('placeholder-box');
             
-            artImg.src = `./assets/${res.imgName}`; 
+            artImg.src = `./${res.imgName}`; 
             
             artImg.onload = () => {
                 artImg.style.display = 'block';
                 placeholder.style.display = 'none';
             };
             artImg.onerror = () => {
-                placeholder.innerHTML = `<span style="font-size: 40px; margin-bottom: 10px;">😿</span><br>[ 哎呀，画师还没画完 ${res.imgName} ]`;
+                placeholder.innerHTML = `<span style="font-size: 30px; margin-bottom: 10px;">😿</span><br><span style="font-size:14px">[ 画师还没画完 ${res.imgName} ]</span>`;
             }
 
             switchScreen('screen-result');
-        }, 1800); 
+        }, 1500); 
     }
 </script>
 
